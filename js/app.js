@@ -5598,4 +5598,5 @@ const App = {
 // Ждём полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     App.init();
+
 });
