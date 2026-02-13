@@ -453,37 +453,79 @@ const DB = {
 const Auth = {
 
     init() {
+        this.bindEvents();
+
         const user = DB.getUser();
         if (user) {
             this.showLogin(user.name);
         } else {
             this.showRegister();
         }
-        this.bindEvents();
     },
 
     bindEvents() {
-        // Переключение между экранами
-        document.getElementById('btn-go-register').addEventListener('click', () => this.showRegister());
+        // Кнопка "Создать аккаунт" (на экране входа)
+        document.getElementById('btn-go-register').addEventListener('click', () => {
+            this.showRegister();
+        });
+
+        // Кнопка "Уже есть аккаунт" (на экране регистрации)
         document.getElementById('btn-go-login').addEventListener('click', () => {
             const user = DB.getUser();
-            if (user) this.showLogin(user.name);
+            if (user) {
+                this.showLogin(user.name);
+            } else {
+                UI.toast('Аккаунт не найден. Создайте новый.', 'error');
+            }
         });
-        document.getElementById('btn-back-register').addEventListener('click', () => this.showRegister());
-        document.getElementById('btn-back-set-pin').addEventListener('click', () => this.showSetPin());
 
-        // Регистрация — кнопка "Далее"
-        document.getElementById('btn-reg-next').addEventListener('click', () => this.onRegisterNext());
+        // Кнопка "Назад" (на экране установки PIN)
+        document.getElementById('btn-back-register').addEventListener('click', () => {
+            State.pinInput = '';
+            this.showRegister();
+        });
+
+        // Кнопка "Назад" (на экране подтверждения PIN)
+        document.getElementById('btn-back-set-pin').addEventListener('click', () => {
+            State.pinInput = '';
+            State.tempPin = '';
+            this.showSetPin();
+        });
+
+        // Кнопка "Далее" при регистрации
+        document.getElementById('btn-reg-next').addEventListener('click', () => {
+            this.onRegisterNext();
+        });
 
         // Enter на поле имени
         document.getElementById('reg-name').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.onRegisterNext();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.onRegisterNext();
+            }
         });
 
         // PIN-пады
         this.bindPinPad('pin-pad-login', 'login');
         this.bindPinPad('pin-pad-set', 'set');
         this.bindPinPad('pin-pad-confirm', 'confirm');
+
+        // Поддержка физической клавиатуры для PIN
+        document.addEventListener('keydown', (e) => {
+            const authScreen = document.getElementById('auth-screen');
+            if (!authScreen || authScreen.style.display === 'none') return;
+
+            const activeMode = State.pinMode;
+            if (!activeMode) return;
+
+            if (e.key >= '0' && e.key <= '9') {
+                e.preventDefault();
+                this.pinInput(e.key, activeMode);
+            } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                e.preventDefault();
+                this.pinDelete(activeMode);
+            }
+        });
     },
 
     bindPinPad(padId, mode) {
@@ -497,7 +539,6 @@ const Auth = {
             const key = btn.dataset.key;
             if (!key) return;
 
-            // Вибрация на мобилке
             if (navigator.vibrate) navigator.vibrate(30);
 
             if (key === 'delete') {
@@ -511,7 +552,6 @@ const Auth = {
     pinInput(digit, mode) {
         if (State.pinInput.length >= CONFIG.PIN_LENGTH) return;
 
-        // Проверяем блокировку
         if (State.lockUntil && Date.now() < State.lockUntil) {
             const secs = Math.ceil((State.lockUntil - Date.now()) / 1000);
             this.showPinError(mode, `Заблокировано. Подождите ${secs} сек.`);
@@ -568,13 +608,11 @@ const Auth = {
         if (!user) return;
 
         if (Utils.hashPin(pin) === user.pinHash) {
-            // Успех
             State.pinAttempts = 0;
             State.currentUser = user;
             State.pinInput = '';
             this.onLoginSuccess();
         } else {
-            // Неверный PIN
             State.pinAttempts++;
             State.pinInput = '';
 
@@ -597,7 +635,6 @@ const Auth = {
 
     confirmPin(pin) {
         if (pin === State.tempPin) {
-            // PIN совпал — создаём аккаунт
             const user = {
                 name: State.tempRegName,
                 pinHash: Utils.hashPin(pin),
@@ -609,9 +646,7 @@ const Auth = {
             State.tempPin = '';
             State.tempRegName = '';
 
-            // Создаём дефолтные категории
             this.createDefaultCategories();
-
             this.onLoginSuccess();
         } else {
             State.pinInput = '';
@@ -674,18 +709,28 @@ const Auth = {
     onLoginSuccess() {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
+
+        // Сбрасываем PIN mode
+        State.pinMode = '';
+
         App.initAfterLogin();
     },
 
     logout() {
         State.currentUser = null;
         State.pinInput = '';
+        State.pinMode = '';
+
         document.getElementById('app').style.display = 'none';
         document.getElementById('auth-screen').style.display = 'flex';
+
         const user = DB.getUser();
         if (user) {
             this.showLogin(user.name);
+        } else {
+            this.showRegister();
         }
+
         // Уничтожаем графики
         Object.values(State.charts).forEach(chart => {
             if (chart && chart.destroy) chart.destroy();
@@ -693,29 +738,36 @@ const Auth = {
         State.charts = {};
     },
 
-    // === Показ экранов ===
+    // === ПОКАЗ ЭКРАНОВ ===
 
     showLogin(name) {
         this.hideAllAuth();
-        document.getElementById('auth-login').style.display = 'flex';
+        const el = document.getElementById('auth-login');
+        if (el) el.style.display = 'flex';
         document.getElementById('auth-greeting').textContent = `С возвращением, ${name}!`;
         State.pinInput = '';
         State.pinMode = 'login';
         this.resetPinDots('login');
+        this.clearPinError('login');
     },
 
     showRegister() {
         this.hideAllAuth();
-        document.getElementById('auth-register').style.display = 'flex';
+        const el = document.getElementById('auth-register');
+        if (el) el.style.display = 'flex';
         document.getElementById('reg-name').value = State.tempRegName || '';
         document.getElementById('reg-name-error').textContent = '';
-        setTimeout(() => document.getElementById('reg-name').focus(), 100);
+        State.pinMode = '';
+        setTimeout(() => {
+            const input = document.getElementById('reg-name');
+            if (input) input.focus();
+        }, 100);
     },
 
     showSetPin() {
         this.hideAllAuth();
-        document.getElementById('auth-set-pin').style.display = 'flex';
-        document.getElementById('set-pin-label').textContent = 'Введите 4-значный PIN-код';
+        const el = document.getElementById('auth-set-pin');
+        if (el) el.style.display = 'flex';
         State.pinInput = '';
         State.pinMode = 'set';
         this.resetPinDots('set');
@@ -724,7 +776,8 @@ const Auth = {
 
     showConfirmPin() {
         this.hideAllAuth();
-        document.getElementById('auth-confirm-pin').style.display = 'flex';
+        const el = document.getElementById('auth-confirm-pin');
+        if (el) el.style.display = 'flex';
         State.pinInput = '';
         State.pinMode = 'confirm';
         this.resetPinDots('confirm');
@@ -732,7 +785,8 @@ const Auth = {
     },
 
     hideAllAuth() {
-        document.querySelectorAll('.auth-container').forEach(el => {
+        const containers = document.querySelectorAll('#auth-screen .auth-container');
+        containers.forEach(el => {
             el.style.display = 'none';
         });
     },
@@ -5600,3 +5654,4 @@ document.addEventListener('DOMContentLoaded', () => {
     App.init();
 
 });
+
