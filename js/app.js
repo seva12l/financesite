@@ -457,42 +457,63 @@ const Auth = {
 
         const user = DB.getUser();
         if (user) {
+            // Есть сохранённый аккаунт → вход по PIN
             this.showLogin(user.name);
         } else {
+            // Нет аккаунта → регистрация
             this.showRegister();
         }
     },
 
     bindEvents() {
-        // Кнопка "Создать аккаунт" (на экране входа)
+        // === Переключение экранов ===
+
+        // "Создать аккаунт" (на экране входа по PIN)
         document.getElementById('btn-go-register').addEventListener('click', () => {
-            this.showRegister();
+            // Предупреждаем что старый аккаунт будет удалён
+            const user = DB.getUser();
+            if (user) {
+                if (confirm(`Создать новый аккаунт? Данные аккаунта "${user.name}" будут удалены.`)) {
+                    DB.resetAll();
+                    this.showRegister();
+                }
+            } else {
+                this.showRegister();
+            }
         });
 
-        // Кнопка "Уже есть аккаунт" (на экране регистрации)
+        // "Уже есть аккаунт" (на экране регистрации)
         document.getElementById('btn-go-login').addEventListener('click', () => {
             const user = DB.getUser();
             if (user) {
                 this.showLogin(user.name);
             } else {
-                UI.toast('Аккаунт не найден. Создайте новый.', 'error');
+                // Нет аккаунта — показываем сообщение
+                const errorEl = document.getElementById('reg-name-error');
+                if (errorEl) {
+                    errorEl.textContent = 'Аккаунт не найден. Создайте новый.';
+                    setTimeout(() => { errorEl.textContent = ''; }, 3000);
+                }
             }
         });
 
-        // Кнопка "Назад" (на экране установки PIN)
+        // "Назад" (на экране установки PIN → назад к вводу имени)
         document.getElementById('btn-back-register').addEventListener('click', () => {
             State.pinInput = '';
+            State.tempPin = '';
             this.showRegister();
         });
 
-        // Кнопка "Назад" (на экране подтверждения PIN)
+        // "Назад" (на экране подтверждения PIN → назад к установке PIN)
         document.getElementById('btn-back-set-pin').addEventListener('click', () => {
             State.pinInput = '';
             State.tempPin = '';
             this.showSetPin();
         });
 
-        // Кнопка "Далее" при регистрации
+        // === Регистрация ===
+
+        // Кнопка "Далее" (после ввода имени)
         document.getElementById('btn-reg-next').addEventListener('click', () => {
             this.onRegisterNext();
         });
@@ -505,12 +526,12 @@ const Auth = {
             }
         });
 
-        // PIN-пады
+        // === PIN-пады ===
         this.bindPinPad('pin-pad-login', 'login');
         this.bindPinPad('pin-pad-set', 'set');
         this.bindPinPad('pin-pad-confirm', 'confirm');
 
-        // Поддержка физической клавиатуры для PIN
+        // === Физическая клавиатура для PIN ===
         document.addEventListener('keydown', (e) => {
             const authScreen = document.getElementById('auth-screen');
             if (!authScreen || authScreen.style.display === 'none') return;
@@ -518,15 +539,20 @@ const Auth = {
             const activeMode = State.pinMode;
             if (!activeMode) return;
 
-            if (e.key >= '0' && e.key <= '9') {
+            // Цифры 0-9
+            if (/^[0-9]$/.test(e.key)) {
                 e.preventDefault();
                 this.pinInput(e.key, activeMode);
-            } else if (e.key === 'Backspace' || e.key === 'Delete') {
+            }
+            // Backspace / Delete
+            else if (e.key === 'Backspace' || e.key === 'Delete') {
                 e.preventDefault();
                 this.pinDelete(activeMode);
             }
         });
     },
+
+    // === PIN-PAD ===
 
     bindPinPad(padId, mode) {
         const pad = document.getElementById(padId);
@@ -537,8 +563,9 @@ const Auth = {
             if (!btn || btn.disabled) return;
 
             const key = btn.dataset.key;
-            if (!key) return;
+            if (key === undefined || key === null) return;
 
+            // Вибрация на мобилке
             if (navigator.vibrate) navigator.vibrate(30);
 
             if (key === 'delete') {
@@ -552,6 +579,7 @@ const Auth = {
     pinInput(digit, mode) {
         if (State.pinInput.length >= CONFIG.PIN_LENGTH) return;
 
+        // Проверяем блокировку
         if (State.lockUntil && Date.now() < State.lockUntil) {
             const secs = Math.ceil((State.lockUntil - Date.now()) / 1000);
             this.showPinError(mode, `Заблокировано. Подождите ${secs} сек.`);
@@ -561,8 +589,9 @@ const Auth = {
         State.pinInput += digit;
         this.updatePinDots(mode);
 
+        // Когда набрали полный PIN
         if (State.pinInput.length === CONFIG.PIN_LENGTH) {
-            setTimeout(() => this.onPinComplete(mode), 200);
+            setTimeout(() => this.onPinComplete(mode), 250);
         }
     },
 
@@ -574,93 +603,125 @@ const Auth = {
     },
 
     updatePinDots(mode) {
-        const dotsMap = {
+        const dotsId = {
             login: 'pin-dots-login',
             set: 'pin-dots-set',
             confirm: 'pin-dots-confirm'
         };
-        const dotsEl = document.getElementById(dotsMap[mode]);
-        if (!dotsEl) return;
+        const container = document.getElementById(dotsId[mode]);
+        if (!container) return;
 
-        const dots = dotsEl.querySelectorAll('.pin-dot');
+        const dots = container.querySelectorAll('.pin-dot');
         dots.forEach((dot, i) => {
             dot.classList.toggle('filled', i < State.pinInput.length);
             dot.classList.remove('error');
         });
     },
 
+    // === ОБРАБОТКА ЗАВЕРШЕНИЯ ВВОДА PIN ===
+
     onPinComplete(mode) {
         const pin = State.pinInput;
 
-        if (mode === 'login') {
-            this.verifyPin(pin);
-        } else if (mode === 'set') {
-            State.tempPin = pin;
-            State.pinInput = '';
-            this.showConfirmPin();
-        } else if (mode === 'confirm') {
-            this.confirmPin(pin);
+        switch (mode) {
+            case 'login':
+                this.verifyPin(pin);
+                break;
+            case 'set':
+                State.tempPin = pin;
+                State.pinInput = '';
+                this.showConfirmPin();
+                break;
+            case 'confirm':
+                this.confirmPin(pin);
+                break;
         }
     },
 
+    // Проверка PIN при входе
     verifyPin(pin) {
         const user = DB.getUser();
-        if (!user) return;
+        if (!user) {
+            this.showPinError('login', 'Ошибка: аккаунт не найден');
+            State.pinInput = '';
+            return;
+        }
 
-        if (Utils.hashPin(pin) === user.pinHash) {
+        const pinHash = Utils.hashPin(pin);
+
+        if (pinHash === user.pinHash) {
+            // ✅ Верный PIN
             State.pinAttempts = 0;
+            State.lockUntil = null;
             State.currentUser = user;
             State.pinInput = '';
             this.onLoginSuccess();
         } else {
+            // ❌ Неверный PIN
             State.pinAttempts++;
             State.pinInput = '';
 
             if (State.pinAttempts >= CONFIG.MAX_PIN_ATTEMPTS) {
+                // Блокировка
                 State.lockUntil = Date.now() + CONFIG.LOCK_DURATION;
-                this.showPinError('login', `Слишком много попыток. Блокировка на ${CONFIG.LOCK_DURATION / 1000} сек.`);
+                this.showPinError('login',
+                    `Слишком много попыток. Блокировка на ${CONFIG.LOCK_DURATION / 1000} сек.`
+                );
+
                 setTimeout(() => {
                     State.pinAttempts = 0;
                     State.lockUntil = null;
                     this.clearPinError('login');
                 }, CONFIG.LOCK_DURATION);
             } else {
-                const left = CONFIG.MAX_PIN_ATTEMPTS - State.pinAttempts;
-                this.showPinError('login', `Неверный PIN. Осталось попыток: ${left}`);
+                const remaining = CONFIG.MAX_PIN_ATTEMPTS - State.pinAttempts;
+                this.showPinError('login', `Неверный PIN. Осталось попыток: ${remaining}`);
             }
 
             this.shakePin('login');
         }
     },
 
+    // Подтверждение PIN при регистрации
     confirmPin(pin) {
         if (pin === State.tempPin) {
+            // ✅ PIN совпал — создаём аккаунт
             const user = {
                 name: State.tempRegName,
                 pinHash: Utils.hashPin(pin),
                 createdAt: new Date().toISOString()
             };
+
             DB.saveUser(user);
             State.currentUser = user;
             State.pinInput = '';
             State.tempPin = '';
             State.tempRegName = '';
 
+            // Создаём дефолтные категории
             this.createDefaultCategories();
+
             this.onLoginSuccess();
         } else {
+            // ❌ PIN не совпал
             State.pinInput = '';
-            this.showPinError('confirm', 'PIN-коды не совпадают. Попробуйте снова.');
+            this.showPinError('confirm', 'PIN-коды не совпадают');
             this.shakePin('confirm');
+
+            // Через 1.5 сек → назад к установке PIN
             setTimeout(() => {
+                State.tempPin = '';
                 this.clearPinError('confirm');
                 this.showSetPin();
             }, 1500);
         }
     },
 
+    // === СОЗДАНИЕ ДЕФОЛТНЫХ КАТЕГОРИЙ ===
+
     createDefaultCategories() {
         const categories = [];
+
         CONFIG.DEFAULT_CATEGORIES.expense.forEach(cat => {
             categories.push({
                 id: Utils.generateId(),
@@ -671,6 +732,7 @@ const Auth = {
                 budget: 0
             });
         });
+
         CONFIG.DEFAULT_CATEGORIES.income.forEach(cat => {
             categories.push({
                 id: Utils.generateId(),
@@ -681,69 +743,94 @@ const Auth = {
                 budget: 0
             });
         });
+
         DB.saveCategories(categories);
     },
+
+    // === РЕГИСТРАЦИЯ: ВВОД ИМЕНИ ===
 
     onRegisterNext() {
         const nameInput = document.getElementById('reg-name');
         const name = nameInput.value.trim();
         const errorEl = document.getElementById('reg-name-error');
 
+        // Очищаем ошибку
+        errorEl.textContent = '';
+
         if (!name) {
             errorEl.textContent = 'Введите ваше имя';
             nameInput.focus();
             return;
         }
+
         if (name.length < 2) {
-            errorEl.textContent = 'Имя слишком короткое';
+            errorEl.textContent = 'Минимум 2 символа';
             nameInput.focus();
             return;
         }
 
+        // Сохраняем имя и переходим к PIN
         State.tempRegName = name;
-        errorEl.textContent = '';
         State.pinInput = '';
+        State.tempPin = '';
         this.showSetPin();
     },
 
-    onLoginSuccess() {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
+    // === УСПЕШНЫЙ ВХОД ===
 
-        // Сбрасываем PIN mode
+    onLoginSuccess() {
+        const authScreen = document.getElementById('auth-screen');
+        const app = document.getElementById('app');
+
+        if (authScreen) authScreen.style.display = 'none';
+        if (app) app.style.display = 'flex';
+
         State.pinMode = '';
 
         App.initAfterLogin();
     },
 
+    // === ВЫХОД ===
+
     logout() {
         State.currentUser = null;
         State.pinInput = '';
+        State.tempPin = '';
+        State.tempRegName = '';
         State.pinMode = '';
 
-        document.getElementById('app').style.display = 'none';
-        document.getElementById('auth-screen').style.display = 'flex';
+        const authScreen = document.getElementById('auth-screen');
+        const app = document.getElementById('app');
 
+        if (app) app.style.display = 'none';
+        if (authScreen) authScreen.style.display = 'flex';
+
+        // Уничтожаем графики
+        Object.values(State.charts).forEach(chart => {
+            if (chart && typeof chart.destroy === 'function') chart.destroy();
+        });
+        State.charts = {};
+
+        // Показываем нужный экран
         const user = DB.getUser();
         if (user) {
             this.showLogin(user.name);
         } else {
             this.showRegister();
         }
-
-        // Уничтожаем графики
-        Object.values(State.charts).forEach(chart => {
-            if (chart && chart.destroy) chart.destroy();
-        });
-        State.charts = {};
     },
 
     // === ПОКАЗ ЭКРАНОВ ===
 
+    hideAllAuth() {
+        document.querySelectorAll('#auth-screen .auth-container').forEach(el => {
+            el.style.display = 'none';
+        });
+    },
+
     showLogin(name) {
         this.hideAllAuth();
-        const el = document.getElementById('auth-login');
-        if (el) el.style.display = 'flex';
+        document.getElementById('auth-login').style.display = 'flex';
         document.getElementById('auth-greeting').textContent = `С возвращением, ${name}!`;
         State.pinInput = '';
         State.pinMode = 'login';
@@ -753,21 +840,23 @@ const Auth = {
 
     showRegister() {
         this.hideAllAuth();
-        const el = document.getElementById('auth-register');
-        if (el) el.style.display = 'flex';
-        document.getElementById('reg-name').value = State.tempRegName || '';
+        document.getElementById('auth-register').style.display = 'flex';
+
+        const nameInput = document.getElementById('reg-name');
+        nameInput.value = State.tempRegName || '';
         document.getElementById('reg-name-error').textContent = '';
+
+        State.pinInput = '';
+        State.tempPin = '';
         State.pinMode = '';
-        setTimeout(() => {
-            const input = document.getElementById('reg-name');
-            if (input) input.focus();
-        }, 100);
+
+        setTimeout(() => nameInput.focus(), 150);
     },
 
     showSetPin() {
         this.hideAllAuth();
-        const el = document.getElementById('auth-set-pin');
-        if (el) el.style.display = 'flex';
+        document.getElementById('auth-set-pin').style.display = 'flex';
+        document.getElementById('set-pin-label').textContent = 'Введите 4-значный PIN-код';
         State.pinInput = '';
         State.pinMode = 'set';
         this.resetPinDots('set');
@@ -776,67 +865,66 @@ const Auth = {
 
     showConfirmPin() {
         this.hideAllAuth();
-        const el = document.getElementById('auth-confirm-pin');
-        if (el) el.style.display = 'flex';
+        document.getElementById('auth-confirm-pin').style.display = 'flex';
         State.pinInput = '';
         State.pinMode = 'confirm';
         this.resetPinDots('confirm');
         this.clearPinError('confirm');
     },
 
-    hideAllAuth() {
-        const containers = document.querySelectorAll('#auth-screen .auth-container');
-        containers.forEach(el => {
-            el.style.display = 'none';
-        });
-    },
+    // === УТИЛИТЫ PIN ===
 
     resetPinDots(mode) {
-        const dotsMap = {
+        const dotsId = {
             login: 'pin-dots-login',
             set: 'pin-dots-set',
             confirm: 'pin-dots-confirm'
         };
-        const dotsEl = document.getElementById(dotsMap[mode]);
-        if (!dotsEl) return;
-        dotsEl.querySelectorAll('.pin-dot').forEach(dot => {
+        const container = document.getElementById(dotsId[mode]);
+        if (!container) return;
+
+        container.querySelectorAll('.pin-dot').forEach(dot => {
             dot.classList.remove('filled', 'error');
         });
     },
 
     showPinError(mode, msg) {
-        const errMap = {
+        const errorId = {
             login: 'pin-error-login',
             set: 'pin-error-set',
             confirm: 'pin-error-confirm'
         };
-        const el = document.getElementById(errMap[mode]);
+        const el = document.getElementById(errorId[mode]);
         if (el) el.textContent = msg;
     },
 
     clearPinError(mode) {
-        const errMap = {
+        const errorId = {
             login: 'pin-error-login',
             set: 'pin-error-set',
             confirm: 'pin-error-confirm'
         };
-        const el = document.getElementById(errMap[mode]);
+        const el = document.getElementById(errorId[mode]);
         if (el) el.textContent = '';
     },
 
     shakePin(mode) {
-        const dotsMap = {
+        const dotsId = {
             login: 'pin-dots-login',
             set: 'pin-dots-set',
             confirm: 'pin-dots-confirm'
         };
-        const dotsEl = document.getElementById(dotsMap[mode]);
-        if (!dotsEl) return;
-        dotsEl.querySelectorAll('.pin-dot').forEach(dot => {
-            dot.classList.add('error');
-        });
+        const container = document.getElementById(dotsId[mode]);
+        if (!container) return;
+
+        const dots = container.querySelectorAll('.pin-dot');
+
+        // Добавляем ошибку
+        dots.forEach(dot => dot.classList.add('error'));
+
+        // Убираем через 500мс
         setTimeout(() => {
-            dotsEl.querySelectorAll('.pin-dot').forEach(dot => {
+            dots.forEach(dot => {
                 dot.classList.remove('error', 'filled');
             });
         }, 500);
@@ -5654,4 +5742,5 @@ document.addEventListener('DOMContentLoaded', () => {
     App.init();
 
 });
+
 
