@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Финансы">
+    <meta name="description" content="Персональный финансовый трекер с многовалютными счетами">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <title>💰 Финансы</title>
+</head>
+<body>
+
+    <!-- ==================== ЭКРАН АВТОРИЗАЦИИ ==================== -->
+    <div id="auth-screen" class="auth-screen">
+
+        <!-- Вход по PIN-коду -->
+        <div id="auth-login" class="auth-container" style="display:none;">
+            <div class="auth-logo">💰</div>
+            <h1 class="auth-title">Финансы</h1>
+            <p class="auth-subtitle" id="auth-greeting">Добро пожаловать!</p>
+            <div class="pin-dots" id="pin-dots-login">
+                <span class="pin-dot" data-index="0"></span>
+                <span class="pin-dot" data-index="1"></span>
+                <span class="pin-dot" data-index="2"></span>
+                <span class="pin-dot" data-index="3"></span>
+            </div>
+            <p class="pin-label">Введите PIN-код</p>
+            <div class="pin-error" id="pin-error-login" role="alert" aria-live="polite"></div>
+            <div class="pin-pad" id="pin-pad-login">
+                <button class="pin-key" data-key="1" type="button" aria-label="1">1</button>
+                <button class="pin-key" data-key="2" type="button" aria-label="2">2</button>
+                <button class="pin-key" data-key="3" type="button" aria-label="3">3</button>
+                <button class="pin-key" data-key="4" type="button" aria-label="4">4</button>
+                <button class="pin-key" data-key="5" type="button" aria-label="5">5</button>
+                <button class="pin-key" data-key="6" type="button" aria-label="6">6</button>
+                <button class="pin-key" data-key="7" type="button" aria-label="7">7</button>
+                <button class="pin-key" data-key="8" type="button" aria-label="8">8</button>
+                <button class="pin-key" data-key="9" type="button" aria-label="9">9</button>
+                <button class="pin-key pin-key-empty" type="button" disabled aria-hidden="true"></button>
+                <button class="pin-key" data-key="0" type="button" aria-label="0">0</button>
+                <button class="pin-key pin-key-delete" data-key="delete" type="button" aria-label="Удалить">⌫</button>
+            </div>
+            <button class="auth-link" id="btn-go-register" type="button">Создать аккаунт</button>
+        </div>
+
+        <!-- Регистрация: ввод имени -->
+        <div id="auth-register" class="auth-container" style="display:none;">
+            <div class="auth-logo">💰</div>
+            <h1 class="auth-title">Создание аккаунта</h1>
+            <p class="auth-subtitle">Введите ваше имя</p>
+            <div class="auth-form">
+                <input type="text" id="reg-name" class="auth-input" placeholder="Ваше имя" maxlength="20" autocomplete="off" autofocus>
+                <div class="auth-error" id="reg-name-error" role="alert" aria-live="polite"></div>
+                <button class="btn btn-primary btn-block" id="btn-reg-next" type="button">Далее</button>
+            </div>
+            <button class="auth-link" id="btn-go-login" type="button">Уже есть аккаунт</button>
+        </div>
+
+        <!-- Регистрация: установка PIN-кода -->
+        <div id="auth-set-pin" class="auth-container" style="display:none;">
+            <div class="auth-logo">🔒</div>
+            <h1 class="auth-title">Придумайте PIN</h1>
+            <p class="auth-subtitle" id="set-pin-label">Введите 4-значный PIN-код</p>
+            <div class="pin-dots" id="pin-dots-set">
+                <span class="pin-dot" data-index="0"></span>
+                <span class="pin-dot" data-index="1"></span>
+                <span class="pin-dot" data-index="2"></span>
+                <span class="pin-dot" data-index="3"></span>
+            </div>
+            <div class="pin-error" id="pin-error-set" role="alert" aria-live="polite"></div>
+            <div class="pin-pad" id="pin-pad-set">
+                <button class="pin-key" data-key="1" type="button" aria-label="1">1</button>
+                <button class="pin-key" data-key="2" type="button" aria-label="2">2</button>
+                <button class="pin-key" data-key="3" type="button" aria-label="3">3</button>
+                <button class="pin-key" data-key="4" type="button" aria-label="4">4</button>
+                <button class="pin-key" data-key="5" type="button" aria-label="5">5</button>
+                <button class="pin-key" data-key="6" type="button" aria-label="6">6</button>
+                <button class="pin-key" data-key="7" type="button" aria-label="7">7</button>
+                <button class="pin-key" data-key="8" type="button" aria-label="8">8</button>
+                <button class="pin-key" data-key="9" type="button" aria-label="9">9</button>
+                <button class="pin-key pin-key-empty" type="button" disabled aria-hidden="true"></button>
+                <button class="pin-key" data-key="0" type="button" aria-label="0">0</button>
+                <button class="pin-key pin-key-delete" data-key="delete" type="button" aria-label="Удалить">⌫</button>
+            </div>
+            <button class="auth-link" id="btn-back-register" type="button">← Назад</button>
+        </div>
+
+        <!-- Регистрация: подтверждение PIN-кода -->
+        <div id="auth-confirm-pin" class="auth-container" style="display:none;">
+            <div class="auth-logo">🔒</div>
+            <h1 class="auth-title">Подтвердите PIN</h1>
+            <p class="auth-subtitle">Введите PIN-код повторно</p>
+            <div class="pin-dots" id="pin-dots-confirm">
+                <span class="pin-dot" data-index="0"></span>
+                <span class="pin-dot" data-index="1"></span>
+                <span class="pin-dot" data-index="2"></span>
+                <span class="pin-dot" data-index="3"></span>
+            </div>
+            <div class="pin-error" id="pin-error-confirm" role="alert" aria-live="polite"></div>
+            <div class="pin-pad" id="pin-pad-confirm">
+                <button class="pin-key" data-key="1" type="button" aria-label="1">1</button>
+                <button class="pin-key" data-key="2" type="button" aria-label="2">2</button>
+                <button class="pin-key" data-key="3" type="button" aria-label="3">3</button>
+                <button class="pin-key" data-key="4" type="button" aria-label="4">4</button>
+                <button class="pin-key" data-key="5" type="button" aria-label="5">5</button>
+                <button class="pin-key" data-key="6" type="button" aria-label="6">6</button>
+                <button class="pin-key" data-key="7" type="button" aria-label="7">7</button>
+                <button class="pin-key" data-key="8" type="button" aria-label="8">8</button>
+                <button class="pin-key" data-key="9" type="button" aria-label="9">9</button>
+                <button class="pin-key pin-key-empty" type="button" disabled aria-hidden="true"></button>
+                <button class="pin-key" data-key="0" type="button" aria-label="0">0</button>
+                <button class="pin-key pin-key-delete" data-key="delete" type="button" aria-label="Удалить">⌫</button>
+            </div>
+            <button class="auth-link" id="btn-back-set-pin" type="button">← Назад</button>
+        </div>
+
+    </div>
+
+    <!-- ==================== ОСНОВНОЕ ПРИЛОЖЕНИЕ ==================== -->
+    <div id="app" class="app" style="display:none;">
+
+        <!-- Боковое меню (десктоп) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-logo">💰</span>
+                <span class="sidebar-brand">Финансы</span>
+            </div>
+            <nav class="sidebar-nav" role="navigation" aria-label="Главная навигация">
+                <a href="#dashboard" class="sidebar-link active" data-page="dashboard" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">📊</span>
+                    <span class="sidebar-text">Дашборд</span>
+                </a>
+                <a href="#accounts" class="sidebar-link" data-page="accounts" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">💳</span>
+                    <span class="sidebar-text">Счета</span>
+                </a>
+                <a href="#transactions" class="sidebar-link" data-page="transactions" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">📋</span>
+                    <span class="sidebar-text">Транзакции</span>
+                </a>
+                <a href="#exchange" class="sidebar-link" data-page="exchange" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">💱</span>
+                    <span class="sidebar-text">Обмен валют</span>
+                </a>
+                <a href="#analytics" class="sidebar-link" data-page="analytics" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">📈</span>
+                    <span class="sidebar-text">Аналитика</span>
+                </a>
+                <a href="#goals" class="sidebar-link" data-page="goals" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">🎯</span>
+                    <span class="sidebar-text">Цели</span>
+                </a>
+                <a href="#categories" class="sidebar-link" data-page="categories" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">🏷️</span>
+                    <span class="sidebar-text">Категории</span>
+                </a>
+                <a href="#settings" class="sidebar-link" data-page="settings" role="link">
+                    <span class="sidebar-icon" aria-hidden="true">⚙️</span>
+                    <span class="sidebar-text">Настройки</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user" id="sidebar-user-info">
+                    <span class="sidebar-user-name" id="sidebar-username"></span>
+                </div>
+                <button class="sidebar-logout" id="btn-logout" type="button" aria-label="Выйти">🚪 Выйти</button>
+            </div>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="main-content" id="main-content" role="main">
+
+            <!-- ===== ДАШБОРД ===== -->
+            <section class="page active" id="page-dashboard" aria-label="Дашборд">
+                <div class="page-header">
+                    <h1 class="page-title">Дашборд</h1>
+                    <p class="page-date" id="current-date"></p>
+                </div>
+
+                <!-- Общий баланс -->
+                <div class="balance-card" id="total-balance-card">
+                    <p class="balance-label">Общий баланс</p>
+                    <h2 class="balance-amount" id="total-balance">0.00 BYN</h2>
+                    <div class="balance-currencies" id="balance-currencies">
+                        <!-- JS: 500 USD · 300 EUR · 0.01 BTC -->
+                    </div>
+                </div>
+
+                <!-- Виджеты -->
+                <div class="widgets-grid">
+                    <div class="widget widget-income">
+                        <span class="widget-icon" aria-hidden="true">📥</span>
+                        <div class="widget-info">
+                            <p class="widget-label">Доходы (месяц)</p>
+                            <p class="widget-value" id="widget-income">0.00 BYN</p>
+                        </div>
+                    </div>
+                    <div class="widget widget-expense">
+                        <span class="widget-icon" aria-hidden="true">📤</span>
+                        <div class="widget-info">
+                            <p class="widget-label">Расходы (месяц)</p>
+                            <p class="widget-value" id="widget-expense">0.00 BYN</p>
+                        </div>
+                    </div>
+                    <div class="widget widget-savings">
+                        <span class="widget-icon" aria-hidden="true">💰</span>
+                        <div class="widget-info">
+                            <p class="widget-label">Экономия</p>
+                            <p class="widget-value" id="widget-savings">0.00 BYN</p>
+                        </div>
+                    </div>
+                    <div class="widget widget-goals">
+                        <span class="widget-icon" aria-hidden="true">🎯</span>
+                        <div class="widget-info">
+                            <p class="widget-label">Цели</p>
+                            <p class="widget-value" id="widget-goals">0 / 0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Курсы валют -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">💱 Курсы валют (к BYN)</h3>
+                        <button class="btn btn-sm btn-ghost" id="btn-refresh-rates" type="button" aria-label="Обновить курсы">🔄</button>
+                    </div>
+                    <div class="rates-grid" id="rates-grid">
+                        <!-- JS: динамически -->
+                    </div>
+                    <p class="rates-updated" id="rates-updated">Обновлено: —</p>
+                </div>
+
+                <!-- Графики -->
+                <div class="charts-grid">
+                    <div class="card">
+                        <h3 class="card-title">Доходы vs Расходы</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-income-expense" aria-label="График доходов и расходов"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Расходы по категориям</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-expenses-pie" aria-label="Круговая диаграмма расходов"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Доходы по категориям</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-income-pie" aria-label="Круговая диаграмма доходов"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Динамика баланса</h3>
+                        <div class="chart-container">
+                            <canvas id="chart-balance-line" aria-label="Линейный график баланса"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Последние транзакции -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Последние транзакции</h3>
+                        <button class="btn btn-sm btn-ghost" id="btn-view-all-transactions" type="button" data-page="transactions">Все →</button>
+                    </div>
+                    <div class="transactions-list" id="recent-transactions">
+                        <div class="empty-state">
+                            <span class="empty-icon" aria-hidden="true">📋</span>
+                            <p>Транзакций пока нет</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== СЧЕТА ===== -->
+            <section class="page" id="page-accounts" aria-label="Счета">
+                <div class="page-header">
+                    <h1 class="page-title">Счета</h1>
+                    <button class="btn btn-primary" id="btn-add-account" type="button">+ Добавить</button>
+                </div>
+
+                <!-- Сводка по всем счетам -->
+                <div class="accounts-summary" id="accounts-summary">
+                    <!-- JS: общий баланс по каждой валюте -->
+                </div>
+
+                <div class="accounts-grid" id="accounts-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon" aria-hidden="true">💳</span>
+                        <p>Добавьте ваш первый счёт</p>
+                        <button class="btn btn-primary btn-sm" id="btn-add-account-empty" type="button">+ Добавить счёт</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ТРАНЗАКЦИИ ===== -->
+            <section class="page" id="page-transactions" aria-label="Транзакции">
+                <div class="page-header">
+                    <h1 class="page-title">Транзакции</h1>
+                    <button class="btn btn-primary" id="btn-add-transaction" type="button">+ Добавить</button>
+                </div>
+
+                <!-- Фильтры -->
+                <div class="filters-bar" id="filters-bar">
+                    <div class="filter-group">
+                        <select class="filter-select" id="filter-type" aria-label="Фильтр по типу">
+                            <option value="all">Все типы</option>
+                            <option value="income">📥 Доходы</option>
+                            <option value="expense">📤 Расходы</option>
+                            <option value="transfer">🔄 Переводы</option>
+                            <option value="exchange">💱 Обмен</option>
+                        </select>
+                        <select class="filter-select" id="filter-account" aria-label="Фильтр по счёту">
+                            <option value="all">Все счета</option>
+                            <!-- JS: динамически -->
+                        </select>
+                        <select class="filter-select" id="filter-category" aria-label="Фильтр по категории">
+                            <option value="all">Все категории</option>
+                            <!-- JS: динамически -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-date-range">
+                            <input type="date" class="filter-input" id="filter-date-from" aria-label="Дата от">
+                            <span class="filter-date-sep">—</span>
+                            <input type="date" class="filter-input" id="filter-date-to" aria-label="Дата до">
+                        </div>
+                        <input type="search" class="filter-search" id="filter-search" placeholder="🔍 Поиск..." aria-label="Поиск транзакций">
+                    </div>
+                </div>
+
+                <!-- Итоги по фильтру -->
+                <div class="transactions-summary" id="transactions-summary">
+                    <!-- JS: "Показано: 25 | Доходы: 1000 BYN | Расходы: 500 BYN" -->
+                </div>
+
+                <div class="transactions-list" id="transactions-list">
+                    <div class="empty-state">
+                        <span class="empty-icon" aria-hidden="true">📋</span>
+                        <p>Транзакций пока нет</p>
+                    </div>
+                </div>
+
+                <!-- Пагинация -->
+                <div class="pagination" id="transactions-pagination" style="display:none;">
+                    <button class="btn btn-sm btn-ghost" id="btn-prev-page" type="button" aria-label="Предыдущая страница">← Назад</button>
+                    <span class="pagination-info" id="pagination-info">1 / 1</span>
+                    <button class="btn btn-sm btn-ghost" id="btn-next-page" type="button" aria-label="Следующая страница">Далее →</button>
+                </div>
+            </section>
+
+            <!-- ===== ОБМЕН ВАЛЮТ ===== -->
+            <section class="page" id="page-exchange" aria-label="Обмен валют">
+                <div class="page-header">
+                    <h1 class="page-title">Обмен валют</h1>
+                </div>
+
+                <div class="exchange-card card">
+                    <div class="exchange-form">
+                        <div class="exchange-row">
+                            <label class="form-label" for="exchange-amount-from">Отдаю</label>
+                            <div class="exchange-input-group">
+                                <input type="number" class="form-input" id="exchange-amount-from" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+                                <select class="form-select" id="exchange-currency-from" aria-label="Валюта отдачи">
+                                    <option value="BYN">🇧🇾 BYN</option>
+                                    <option value="USD">🇺🇸 USD</option>
+                                    <option value="EUR">🇪🇺 EUR</option>
+                                    <option value="RUB">🇷🇺 RUB</option>
+                                    <option value="USDT">💎 USDT</option>
+                                    <option value="BTC">₿ BTC</option>
+                                    <option value="ETH">⟠ ETH</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="exchange-swap-container">
+                            <button class="exchange-swap" id="btn-swap-currencies" type="button" aria-label="Поменять валюты местами">⇅</button>
+                        </div>
+
+                        <div class="exchange-row">
+                            <label class="form-label" for="exchange-amount-to">Получаю</label>
+                            <div class="exchange-input-group">
+                                <input type="number" class="form-input" id="exchange-amount-to" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+                                <select class="form-select" id="exchange-currency-to" aria-label="Валюта получения">
+                                    <option value="USD">🇺🇸 USD</option>
+                                    <option value="BYN">🇧🇾 BYN</option>
+                                    <option value="EUR">🇪🇺 EUR</option>
+                                    <option value="RUB">🇷🇺 RUB</option>
+                                    <option value="USDT">💎 USDT</option>
+                                    <option value="BTC">₿ BTC</option>
+                                    <option value="ETH">⟠ ETH</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="exchange-rate-info" id="exchange-rate-info">
+                            Курс: —
+                        </div>
+
+                        <div class="exchange-account-row">
+                            <div class="form-group">
+                                <label class="form-label" for="exchange-account-from">Со счёта</label>
+                                <select class="form-select" id="exchange-account-from" aria-label="Счёт списания">
+                                    <!-- JS: динамически -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="exchange-account-to">На счёт</label>
+                                <select class="form-select" id="exchange-account-to" aria-label="Счёт зачисления">
+                                    <!-- JS: динамически -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="exchange-date">Дата</label>
+                            <input type="date" class="form-input" id="exchange-date">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="exchange-note">Комментарий</label>
+                            <textarea class="form-input" id="exchange-note" placeholder="Необязательно" rows="2" maxlength="200"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="btn-do-exchange" type="button">💱 Обменять</button>
+                    </div>
+                </div>
+
+                <!-- История обменов -->
+                <div class="card">
+                    <h3 class="card-title">История обменов</h3>
+                    <div class="transactions-list" id="exchange-history">
+                        <div class="empty-state">
+                            <span class="empty-icon" aria-hidden="true">💱</span>
+                            <p>Обменов пока не было</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== АНАЛИТИКА ===== -->
+            <section class="page" id="page-analytics" aria-label="Аналитика">
+                <div class="page-header">
+                    <h1 class="page-title">Аналитика</h1>
+                </div>
+
+                <!-- Выбор периода -->
+                <div class="analytics-period" role="tablist" aria-label="Выбор периода">
+                    <button class="period-btn active" data-period="week" type="button" role="tab" aria-selected="true">Неделя</button>
+                    <button class="period-btn" data-period="month" type="button" role="tab" aria-selected="false">Месяц</button>
+                    <button class="period-btn" data-period="quarter" type="button" role="tab" aria-selected="false">Квартал</button>
+                    <button class="period-btn" data-period="year" type="button" role="tab" aria-selected="false">Год</button>
+                    <button class="period-btn" data-period="custom" type="button" role="tab" aria-selected="false">Период</button>
+                </div>
+                <div class="analytics-custom-period" id="custom-period" style="display:none;">
+                    <input type="date" class="form-input" id="analytics-date-from" aria-label="Начало периода">
+                    <span class="filter-date-sep">—</span>
+                    <input type="date" class="form-input" id="analytics-date-to" aria-label="Конец периода">
+                    <button class="btn btn-sm btn-primary" id="btn-apply-period" type="button">Применить</button>
+                </div>
+
+                <!-- Вкладки аналитики -->
+                <div class="tabs" role="tablist" aria-label="Разделы аналитики">
+                    <button class="tab active" data-tab="tab-expenses" type="button" role="tab" aria-selected="true">📤 Расходы</button>
+                    <button class="tab" data-tab="tab-incomes" type="button" role="tab" aria-selected="false">📥 Доходы</button>
+                    <button class="tab" data-tab="tab-compare" type="button" role="tab" aria-selected="false">⚖️ Сравнение</button>
+                    <button class="tab" data-tab="tab-budget" type="button" role="tab" aria-selected="false">📊 Бюджет</button>
+                </div>
+
+                <!-- Вкладка: Расходы -->
+                <div class="tab-content active" id="tab-expenses" role="tabpanel">
+                    <div class="charts-grid">
+                        <div class="card">
+                            <h3 class="card-title">Расходы по категориям</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-an-expenses-pie"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Рейтинг категорий</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-an-expenses-bar"></canvas>
+                            </div>
+                        </div>
+                        <div class="card card-full">
+                            <h3 class="card-title">Тренд расходов</h3>
+                            <div class="chart-container chart-container-wide">
+                                <canvas id="chart-an-expenses-trend"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">📊 Статистика расходов</h3>
+                        <div class="analytics-stats" id="expenses-stats">
+                            <!-- JS: Всего / Среднедневной / Макс категория -->
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">🔝 Топ-5 расходов</h3>
+                        <div class="top-list" id="top-expenses">
+                            <!-- JS: динамически -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка: Доходы -->
+                <div class="tab-content" id="tab-incomes" role="tabpanel">
+                    <div class="charts-grid">
+                        <div class="card">
+                            <h3 class="card-title">Доходы по категориям</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-an-income-pie"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Рейтинг источников</h3>
+                            <div class="chart-container">
+                                <canvas id="chart-an-income-bar"></canvas>
+                            </div>
+                        </div>
+                        <div class="card card-full">
+                            <h3 class="card-title">Тренд доходов</h3>
+                            <div class="chart-container chart-container-wide">
+                                <canvas id="chart-an-income-trend"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">📊 Статистика доходов</h3>
+                        <div class="analytics-stats" id="income-stats">
+                            <!-- JS: динамически -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка: Сравнение -->
+                <div class="tab-content" id="tab-compare" role="tabpanel">
+                    <div class="charts-grid">
+                        <div class="card card-full">
+                            <h3 class="card-title">Доходы vs Расходы</h3>
+                            <div class="chart-container chart-container-wide">
+                                <canvas id="chart-an-compare"></canvas>
+                            </div>
+                        </div>
+                        <div class="card card-full">
+                            <h3 class="card-title">Чистая прибыль / убыток</h3>
+                            <div class="chart-container chart-container-wide">
+                                <canvas id="chart-an-profit"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="widgets-grid">
+                        <div class="widget">
+                            <span class="widget-icon" aria-hidden="true">📥</span>
+                            <div class="widget-info">
+                                <p class="widget-label">Всего доходов</p>
+                                <p class="widget-value" id="an-total-income">0.00 BYN</p>
+                            </div>
+                        </div>
+                        <div class="widget">
+                            <span class="widget-icon" aria-hidden="true">📤</span>
+                            <div class="widget-info">
+                                <p class="widget-label">Всего расходов</p>
+                                <p class="widget-value" id="an-total-expense">0.00 BYN</p>
+                            </div>
+                        </div>
+                        <div class="widget">
+                            <span class="widget-icon" aria-hidden="true">💰</span>
+                            <div class="widget-info">
+                                <p class="widget-label">Норма сбережений</p>
+                                <p class="widget-value" id="an-savings-rate">0%</p>
+                            </div>
+                        </div>
+                        <div class="widget">
+                            <span class="widget-icon" aria-hidden="true">📅</span>
+                            <div class="widget-info">
+                                <p class="widget-label">Ср. дневной расход</p>
+                                <p class="widget-value" id="an-avg-daily">0.00 BYN</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Вкладка: Бюджет -->
+                <div class="tab-content" id="tab-budget" role="tabpanel">
+                    <div class="budget-list" id="budget-list">
+                        <div class="empty-state">
+                            <span class="empty-icon" aria-hidden="true">📊</span>
+                            <p>Установите бюджеты в разделе «Категории»</p>
+                            <button class="btn btn-primary btn-sm" type="button" data-page="categories">Перейти к категориям</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ЦЕЛИ ===== -->
+            <section class="page" id="page-goals" aria-label="Цели сбережений">
+                <div class="page-header">
+                    <h1 class="page-title">Цели сбережений</h1>
+                    <button class="btn btn-primary" id="btn-add-goal" type="button">+ Добавить</button>
+                </div>
+
+                <!-- Сводка целей -->
+                <div class="goals-summary" id="goals-summary">
+                    <!-- JS: "Активных: 3 | Достигнутых: 1" -->
+                </div>
+
+                <div class="goals-grid" id="goals-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon" aria-hidden="true">🎯</span>
+                        <p>Поставьте вашу первую цель!</p>
+                        <button class="btn btn-primary btn-sm" id="btn-add-goal-empty" type="button">+ Создать цель</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== КАТЕГОРИИ ===== -->
+            <section class="page" id="page-categories" aria-label="Категории">
+                <div class="page-header">
+                    <h1 class="page-title">Категории</h1>
+                    <button class="btn btn-primary" id="btn-add-category" type="button">+ Добавить</button>
+                </div>
+
+                <div class="tabs" role="tablist" aria-label="Тип категорий">
+                    <button class="tab active" data-tab="tab-cat-expense" type="button" role="tab" aria-selected="true">📤 Расходы</button>
+                    <button class="tab" data-tab="tab-cat-income" type="button" role="tab" aria-selected="false">📥 Доходы</button>
+                </div>
+
+                <div class="tab-content active" id="tab-cat-expense" role="tabpanel">
+                    <div class="categories-list" id="categories-expense-list">
+                        <!-- JS: динамически -->
+                    </div>
+                </div>
+                <div class="tab-content" id="tab-cat-income" role="tabpanel">
+                    <div class="categories-list" id="categories-income-list">
+                        <!-- JS: динамически -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== НАСТРОЙКИ ===== -->
+            <section class="page" id="page-settings" aria-label="Настройки">
+                <div class="page-header">
+                    <h1 class="page-title">Настройки</h1>
+                </div>
+
+                <div class="settings-list">
+                    <!-- Профиль -->
+                    <div class="card">
+                        <h3 class="card-title">👤 Профиль</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="settings-name">Имя</label>
+                            <input type="text" class="form-input" id="settings-name" maxlength="20" autocomplete="off">
+                        </div>
+                        <button class="btn btn-sm btn-primary" id="btn-save-name" type="button">Сохранить</button>
+                    </div>
+
+                    <!-- Безопасность -->
+                    <div class="card">
+                        <h3 class="card-title">🔒 Безопасность</h3>
+                        <button class="btn btn-block btn-outline" id="btn-change-pin" type="button">Сменить PIN-код</button>
+                    </div>
+
+                    <!-- Данные -->
+                    <div class="card">
+                        <h3 class="card-title">💾 Данные</h3>
+                        <p class="text-muted">Экспортируйте базу данных для резервного копирования. При сбое импортируйте обратно.</p>
+                        <div class="settings-buttons">
+                            <button class="btn btn-block btn-outline" id="btn-export-db" type="button">📥 Экспорт базы данных (JSON)</button>
+                            <label class="btn btn-block btn-outline" for="import-file" role="button" tabindex="0">
+                                📤 Импорт базы данных (JSON)
+                            </label>
+                            <input type="file" id="import-file" accept=".json" style="display:none;" aria-label="Выбрать файл для импорта">
+                            <button class="btn btn-block btn-outline" id="btn-export-csv" type="button">📊 Экспорт транзакций (CSV)</button>
+                        </div>
+                    </div>
+
+                    <!-- Курсы валют вручную -->
+                    <div class="card">
+                        <h3 class="card-title">💱 Курсы валют</h3>
+                        <p class="text-muted">Курсы фиатных валют обновляются автоматически. Для крипто можно задать вручную.</p>
+                        <div class="manual-rates" id="manual-rates">
+                            <!-- JS: инпуты для USDT, BTC, ETH -->
+                        </div>
+                        <button class="btn btn-sm btn-primary" id="btn-save-rates" type="button">Сохранить курсы</button>
+                    </div>
+
+                    <!-- Опасная зона -->
+                    <div class="card card-danger">
+                        <h3 class="card-title">⚠️ Опасная зона</h3>
+                        <p class="text-muted">Это действие удалит все данные без возможности восстановления. Сделайте экспорт перед удалением!</p>
+                        <button class="btn btn-block btn-danger" id="btn-reset-data" type="button">🗑️ Удалить все данные</button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Нижняя навигация (мобилка) -->
+        <nav class="bottom-nav" id="bottom-nav" role="navigation" aria-label="Мобильная навигация">
+            <a href="#dashboard" class="bottom-nav-item active" data-page="dashboard" role="link" aria-label="Дашборд">
+                <span class="bottom-nav-icon" aria-hidden="true">📊</span>
+                <span class="bottom-nav-label">Главная</span>
+            </a>
+            <a href="#accounts" class="bottom-nav-item" data-page="accounts" role="link" aria-label="Счета">
+                <span class="bottom-nav-icon" aria-hidden="true">💳</span>
+                <span class="bottom-nav-label">Счета</span>
+            </a>
+            <button class="bottom-nav-item bottom-nav-add" id="btn-fab-add" type="button" aria-label="Добавить транзакцию">
+                <span class="bottom-nav-icon-add" aria-hidden="true">+</span>
+            </button>
+            <a href="#analytics" class="bottom-nav-item" data-page="analytics" role="link" aria-label="Аналитика">
+                <span class="bottom-nav-icon" aria-hidden="true">📈</span>
+                <span class="bottom-nav-label">Аналитика</span>
+            </a>
+            <button class="bottom-nav-item" id="btn-more-menu" type="button" aria-label="Ещё" aria-expanded="false">
+                <span class="bottom-nav-icon" aria-hidden="true">☰</span>
+                <span class="bottom-nav-label">Ещё</span>
+            </button>
+        </nav>
+
+        <!-- Меню "Ещё" (мобилка) -->
+        <div class="more-menu" id="more-menu" style="display:none;" role="dialog" aria-label="Дополнительное меню">
+            <div class="more-menu-overlay" id="more-menu-overlay"></div>
+            <div class="more-menu-content">
+                <a href="#transactions" class="more-menu-item" data-page="transactions" role="link">📋 Транзакции</a>
+                <a href="#exchange" class="more-menu-item" data-page="exchange" role="link">💱 Обмен валют</a>
+                <a href="#goals" class="more-menu-item" data-page="goals" role="link">🎯 Цели</a>
+                <a href="#categories" class="more-menu-item" data-page="categories" role="link">🏷️ Категории</a>
+                <a href="#settings" class="more-menu-item" data-page="settings" role="link">⚙️ Настройки</a>
+                <button class="more-menu-item more-menu-logout" id="btn-logout-mobile" type="button">🚪 Выйти</button>
+            </div>
+        </div>
+
+        <!-- FAB меню быстрого добавления -->
+        <div class="fab-menu" id="fab-menu" style="display:none;" role="dialog" aria-label="Быстрое добавление">
+            <div class="fab-overlay" id="fab-overlay"></div>
+            <div class="fab-options">
+                <button class="fab-option" data-action="add-income" type="button">
+                    <span class="fab-option-icon income" aria-hidden="true">📥</span>
+                    <span>Доход</span>
+                </button>
+                <button class="fab-option" data-action="add-expense" type="button">
+                    <span class="fab-option-icon expense" aria-hidden="true">📤</span>
+                    <span>Расход</span>
+                </button>
+                <button class="fab-option" data-action="add-transfer" type="button">
+                    <span class="fab-option-icon transfer" aria-hidden="true">🔄</span>
+                    <span>Перевод</span>
+                </button>
+                <button class="fab-option" data-action="add-exchange" type="button">
+                    <span class="fab-option-icon exchange" aria-hidden="true">💱</span>
+                    <span>Обмен</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== МОДАЛЬНЫЕ ОКНА ==================== -->
+
+    <!-- Модалка: Транзакция -->
+    <div class="modal" id="modal-transaction" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-transaction-title">
+        <div class="modal-overlay" data-close="modal-transaction"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-transaction-title">Новая транзакция</h2>
+                <button class="modal-close" data-close="modal-transaction" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="transaction-type-tabs" role="tablist" aria-label="Тип транзакции">
+                    <button class="type-tab active" data-type="expense" type="button" role="tab" aria-selected="true">📤 Расход</button>
+                    <button class="type-tab" data-type="income" type="button" role="tab" aria-selected="false">📥 Доход</button>
+                    <button class="type-tab" data-type="transfer" type="button" role="tab" aria-selected="false">🔄 Перевод</button>
+                </div>
+
+                <input type="hidden" id="tr-id">
+                <input type="hidden" id="tr-type" value="expense">
+
+                <div class="form-group">
+                    <label class="form-label" for="tr-amount">Сумма</label>
+                    <div class="amount-input-group">
+                        <input type="number" class="form-input form-input-lg" id="tr-amount" placeholder="0.00" step="0.01" min="0.01" inputmode="decimal" required>
+                        <select class="form-select" id="tr-currency" aria-label="Валюта">
+                            <option value="BYN">🇧🇾 BYN</option>
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="RUB">🇷🇺 RUB</option>
+                            <option value="USDT">💎 USDT</option>
+                            <option value="BTC">₿ BTC</option>
+                            <option value="ETH">⟠ ETH</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="tr-category-group">
+                    <label class="form-label" for="tr-category">Категория</label>
+                    <select class="form-select" id="tr-category" required>
+                        <!-- JS: динамически -->
+                    </select>
+                </div>
+
+                <div class="form-group" id="tr-account-group">
+                    <label class="form-label" for="tr-account">Счёт</label>
+                    <select class="form-select" id="tr-account" required>
+                        <!-- JS: динамически -->
+                    </select>
+                </div>
+
+                <div class="form-group" id="tr-account-to-group" style="display:none;">
+                    <label class="form-label" for="tr-account-to">На счёт</label>
+                    <select class="form-select" id="tr-account-to">
+                        <!-- JS: динамически -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="tr-date">Дата</label>
+                    <input type="date" class="form-input" id="tr-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="tr-description">Описание</label>
+                    <textarea class="form-input" id="tr-description" placeholder="Комментарий (необязательно)" rows="2" maxlength="200"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-transaction" type="button">Отмена</button>
+                <button class="btn btn-danger" id="btn-delete-transaction" type="button" style="display:none;">Удалить</button>
+                <button class="btn btn-primary" id="btn-save-transaction" type="button">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Счёт -->
+    <div class="modal" id="modal-account" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-account-title">
+        <div class="modal-overlay" data-close="modal-account"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-account-title">Новый счёт</h2>
+                <button class="modal-close" data-close="modal-account" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="acc-id">
+
+                <div class="form-group">
+                    <label class="form-label" for="acc-name">Название</label>
+                    <input type="text" class="form-input" id="acc-name" placeholder="Например: Наличные" maxlength="30" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Иконка</label>
+                    <div class="emoji-picker" id="acc-emoji-picker" role="radiogroup" aria-label="Выбор иконки">
+                        <button class="emoji-btn active" data-emoji="💵" type="button" role="radio" aria-checked="true" aria-label="Наличные">💵</button>
+                        <button class="emoji-btn" data-emoji="💳" type="button" role="radio" aria-checked="false" aria-label="Карта">💳</button>
+                        <button class="emoji-btn" data-emoji="🏦" type="button" role="radio" aria-checked="false" aria-label="Банк">🏦</button>
+                        <button class="emoji-btn" data-emoji="💰" type="button" role="radio" aria-checked="false" aria-label="Деньги">💰</button>
+                        <button class="emoji-btn" data-emoji="🐷" type="button" role="radio" aria-checked="false" aria-label="Копилка">🐷</button>
+                        <button class="emoji-btn" data-emoji="💎" type="button" role="radio" aria-checked="false" aria-label="Крипто">💎</button>
+                        <button class="emoji-btn" data-emoji="📱" type="button" role="radio" aria-checked="false" aria-label="Телефон">📱</button>
+                        <button class="emoji-btn" data-emoji="🪙" type="button" role="radio" aria-checked="false" aria-label="Монета">🪙</button>
+                        <button class="emoji-btn" data-emoji="💲" type="button" role="radio" aria-checked="false" aria-label="Доллар">💲</button>
+                        <button class="emoji-btn" data-emoji="🏧" type="button" role="radio" aria-checked="false" aria-label="Банкомат">🏧</button>
+                    </div>
+                    <input type="hidden" id="acc-icon" value="💵">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="color-picker" id="acc-color-picker" role="radiogroup" aria-label="Выбор цвета">
+                        <button class="color-btn active" data-color="#4F46E5" type="button" role="radio" aria-checked="true" aria-label="Синий" style="background:#4F46E5"></button>
+                        <button class="color-btn" data-color="#0EA5E9" type="button" role="radio" aria-checked="false" aria-label="Голубой" style="background:#0EA5E9"></button>
+                        <button class="color-btn" data-color="#10B981" type="button" role="radio" aria-checked="false" aria-label="Зелёный" style="background:#10B981"></button>
+                        <button class="color-btn" data-color="#F59E0B" type="button" role="radio" aria-checked="false" aria-label="Жёлтый" style="background:#F59E0B"></button>
+                        <button class="color-btn" data-color="#EF4444" type="button" role="radio" aria-checked="false" aria-label="Красный" style="background:#EF4444"></button>
+                        <button class="color-btn" data-color="#8B5CF6" type="button" role="radio" aria-checked="false" aria-label="Фиолетовый" style="background:#8B5CF6"></button>
+                        <button class="color-btn" data-color="#EC4899" type="button" role="radio" aria-checked="false" aria-label="Розовый" style="background:#EC4899"></button>
+                        <button class="color-btn" data-color="#6B7280" type="button" role="radio" aria-checked="false" aria-label="Серый" style="background:#6B7280"></button>
+                    </div>
+                    <input type="hidden" id="acc-color" value="#4F46E5">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Валюты и начальные балансы</label>
+                    <p class="text-muted text-sm">Отметьте валюты, которые хранятся на этом счёте</p>
+                    <div class="account-balances" id="acc-balances">
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="BYN" checked> 🇧🇾 BYN
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="BYN" placeholder="0.00" step="0.01" min="0" value="0" inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="USD"> 🇺🇸 USD
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="USD" placeholder="0.00" step="0.01" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="EUR"> 🇪🇺 EUR
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="EUR" placeholder="0.00" step="0.01" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="RUB"> 🇷🇺 RUB
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="RUB" placeholder="0.00" step="0.01" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="USDT"> 💎 USDT
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="USDT" placeholder="0.00" step="0.01" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="BTC"> ₿ BTC
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="BTC" placeholder="0.00000000" step="0.00000001" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                        <div class="balance-row">
+                            <label class="balance-currency-label">
+                                <input type="checkbox" class="balance-check" value="ETH"> ⟠ ETH
+                            </label>
+                            <input type="number" class="form-input form-input-sm" data-currency="ETH" placeholder="0.00000000" step="0.00000001" min="0" value="0" disabled inputmode="decimal">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-account" type="button">Отмена</button>
+                <button class="btn btn-danger" id="btn-delete-account" type="button" style="display:none;">Удалить</button>
+                <button class="btn btn-primary" id="btn-save-account" type="button">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Категория -->
+    <div class="modal" id="modal-category" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-category-title">
+        <div class="modal-overlay" data-close="modal-category"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-category-title">Новая категория</h2>
+                <button class="modal-close" data-close="modal-category" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="cat-id">
+
+                <div class="form-group">
+                    <label class="form-label" for="cat-type">Тип</label>
+                    <select class="form-select" id="cat-type">
+                        <option value="expense">📤 Расход</option>
+                        <option value="income">📥 Доход</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cat-name">Название</label>
+                    <input type="text" class="form-input" id="cat-name" placeholder="Название категории" maxlength="25" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Иконка</label>
+                    <div class="emoji-picker" id="cat-emoji-picker" role="radiogroup" aria-label="Выбор иконки категории">
+                        <button class="emoji-btn active" data-emoji="🍔" type="button" role="radio" aria-checked="true">🍔</button>
+                        <button class="emoji-btn" data-emoji="🏠" type="button" role="radio" aria-checked="false">🏠</button>
+                        <button class="emoji-btn" data-emoji="🚗" type="button" role="radio" aria-checked="false">🚗</button>
+                        <button class="emoji-btn" data-emoji="👕" type="button" role="radio" aria-checked="false">👕</button>
+                        <button class="emoji-btn" data-emoji="💊" type="button" role="radio" aria-checked="false">💊</button>
+                        <button class="emoji-btn" data-emoji="🎮" type="button" role="radio" aria-checked="false">🎮</button>
+                        <button class="emoji-btn" data-emoji="📱" type="button" role="radio" aria-checked="false">📱</button>
+                        <button class="emoji-btn" data-emoji="📚" type="button" role="radio" aria-checked="false">📚</button>
+                        <button class="emoji-btn" data-emoji="🎁" type="button" role="radio" aria-checked="false">🎁</button>
+                        <button class="emoji-btn" data-emoji="✈️" type="button" role="radio" aria-checked="false">✈️</button>
+                        <button class="emoji-btn" data-emoji="🍺" type="button" role="radio" aria-checked="false">🍺</button>
+                        <button class="emoji-btn" data-emoji="🏋️" type="button" role="radio" aria-checked="false">🏋️</button>
+                        <button class="emoji-btn" data-emoji="💇" type="button" role="radio" aria-checked="false">💇</button>
+                        <button class="emoji-btn" data-emoji="🐕" type="button" role="radio" aria-checked="false">🐕</button>
+                        <button class="emoji-btn" data-emoji="💼" type="button" role="radio" aria-checked="false">💼</button>
+                        <button class="emoji-btn" data-emoji="💻" type="button" role="radio" aria-checked="false">💻</button>
+                        <button class="emoji-btn" data-emoji="📈" type="button" role="radio" aria-checked="false">📈</button>
+                        <button class="emoji-btn" data-emoji="💰" type="button" role="radio" aria-checked="false">💰</button>
+                        <button class="emoji-btn" data-emoji="🛒" type="button" role="radio" aria-checked="false">🛒</button>
+                        <button class="emoji-btn" data-emoji="🔧" type="button" role="radio" aria-checked="false">🔧</button>
+                    </div>
+                    <input type="hidden" id="cat-icon" value="🍔">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="color-picker" id="cat-color-picker" role="radiogroup" aria-label="Выбор цвета категории">
+                        <button class="color-btn active" data-color="#EF4444" type="button" role="radio" aria-checked="true" style="background:#EF4444"></button>
+                        <button class="color-btn" data-color="#F59E0B" type="button" role="radio" aria-checked="false" style="background:#F59E0B"></button>
+                        <button class="color-btn" data-color="#10B981" type="button" role="radio" aria-checked="false" style="background:#10B981"></button>
+                        <button class="color-btn" data-color="#0EA5E9" type="button" role="radio" aria-checked="false" style="background:#0EA5E9"></button>
+                        <button class="color-btn" data-color="#4F46E5" type="button" role="radio" aria-checked="false" style="background:#4F46E5"></button>
+                        <button class="color-btn" data-color="#8B5CF6" type="button" role="radio" aria-checked="false" style="background:#8B5CF6"></button>
+                        <button class="color-btn" data-color="#EC4899" type="button" role="radio" aria-checked="false" style="background:#EC4899"></button>
+                        <button class="color-btn" data-color="#6B7280" type="button" role="radio" aria-checked="false" style="background:#6B7280"></button>
+                    </div>
+                    <input type="hidden" id="cat-color" value="#EF4444">
+                </div>
+
+                <div class="form-group" id="cat-budget-group">
+                    <label class="form-label" for="cat-budget">Бюджет на месяц (BYN)</label>
+                    <p class="text-muted text-sm">Необязательно. Установите лимит расходов по категории.</p>
+                    <input type="number" class="form-input" id="cat-budget" placeholder="0" step="1" min="0" inputmode="numeric">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-category" type="button">Отмена</button>
+                <button class="btn btn-danger" id="btn-delete-category" type="button" style="display:none;">Удалить</button>
+                <button class="btn btn-primary" id="btn-save-category" type="button">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Цель -->
+    <div class="modal" id="modal-goal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-goal-title">
+        <div class="modal-overlay" data-close="modal-goal"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-goal-title">Новая цель</h2>
+                <button class="modal-close" data-close="modal-goal" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="goal-id">
+
+                <div class="form-group">
+                    <label class="form-label" for="goal-name">Название</label>
+                    <input type="text" class="form-input" id="goal-name" placeholder="Например: Отпуск" maxlength="30" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Иконка</label>
+                    <div class="emoji-picker" id="goal-emoji-picker" role="radiogroup" aria-label="Выбор иконки цели">
+                        <button class="emoji-btn active" data-emoji="🎯" type="button" role="radio" aria-checked="true">🎯</button>
+                        <button class="emoji-btn" data-emoji="✈️" type="button" role="radio" aria-checked="false">✈️</button>
+                        <button class="emoji-btn" data-emoji="🏠" type="button" role="radio" aria-checked="false">🏠</button>
+                        <button class="emoji-btn" data-emoji="🚗" type="button" role="radio" aria-checked="false">🚗</button>
+                        <button class="emoji-btn" data-emoji="📱" type="button" role="radio" aria-checked="false">📱</button>
+                        <button class="emoji-btn" data-emoji="💻" type="button" role="radio" aria-checked="false">💻</button>
+                        <button class="emoji-btn" data-emoji="🎓" type="button" role="radio" aria-checked="false">🎓</button>
+                        <button class="emoji-btn" data-emoji="💍" type="button" role="radio" aria-checked="false">💍</button>
+                        <button class="emoji-btn" data-emoji="🏋️" type="button" role="radio" aria-checked="false">🏋️</button>
+                        <button class="emoji-btn" data-emoji="🎁" type="button" role="radio" aria-checked="false">🎁</button>
+                    </div>
+                    <input type="hidden" id="goal-icon" value="🎯">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="goal-target">Целевая сумма</label>
+                    <div class="amount-input-group">
+                        <input type="number" class="form-input" id="goal-target" placeholder="0.00" step="0.01" min="0.01" required inputmode="decimal">
+                        <select class="form-select" id="goal-currency" aria-label="Валюта цели">
+                            <option value="BYN">🇧🇾 BYN</option>
+                            <option value="USD">🇺🇸 USD</option>
+                            <option value="EUR">🇪🇺 EUR</option>
+                            <option value="RUB">🇷🇺 RUB</option>
+                            <option value="USDT">💎 USDT</option>
+                            <option value="BTC">₿ BTC</option>
+                            <option value="ETH">⟠ ETH</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="goal-current">Уже накоплено</label>
+                    <input type="number" class="form-input" id="goal-current" placeholder="0.00" step="0.01" min="0" value="0" inputmode="decimal">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="goal-deadline">Дедлайн</label>
+                    <input type="date" class="form-input" id="goal-deadline">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Цвет</label>
+                    <div class="color-picker" id="goal-color-picker" role="radiogroup" aria-label="Выбор цвета цели">
+                        <button class="color-btn active" data-color="#4F46E5" type="button" role="radio" aria-checked="true" style="background:#4F46E5"></button>
+                        <button class="color-btn" data-color="#0EA5E9" type="button" role="radio" aria-checked="false" style="background:#0EA5E9"></button>
+                        <button class="color-btn" data-color="#10B981" type="button" role="radio" aria-checked="false" style="background:#10B981"></button>
+                        <button class="color-btn" data-color="#F59E0B" type="button" role="radio" aria-checked="false" style="background:#F59E0B"></button>
+                        <button class="color-btn" data-color="#EF4444" type="button" role="radio" aria-checked="false" style="background:#EF4444"></button>
+                        <button class="color-btn" data-color="#8B5CF6" type="button" role="radio" aria-checked="false" style="background:#8B5CF6"></button>
+                        <button class="color-btn" data-color="#EC4899" type="button" role="radio" aria-checked="false" style="background:#EC4899"></button>
+                    </div>
+                    <input type="hidden" id="goal-color" value="#4F46E5">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-goal" type="button">Отмена</button>
+                <button class="btn btn-danger" id="btn-delete-goal" type="button" style="display:none;">Удалить</button>
+                <button class="btn btn-primary" id="btn-save-goal" type="button">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Пополнить цель -->
+    <div class="modal" id="modal-goal-contribute" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-contribute-title">
+        <div class="modal-overlay" data-close="modal-goal-contribute"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-contribute-title">Пополнить цель</h2>
+                <button class="modal-close" data-close="modal-goal-contribute" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="contrib-goal-id">
+                <p id="contrib-goal-info" class="text-muted"></p>
+                <div class="form-group">
+                    <label class="form-label" for="contrib-amount">Сумма</label>
+                    <input type="number" class="form-input form-input-lg" id="contrib-amount" placeholder="0.00" step="0.01" min="0.01" inputmode="decimal" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-goal-contribute" type="button">Отмена</button>
+                <button class="btn btn-primary" id="btn-save-contribution" type="button">Пополнить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Смена PIN -->
+    <div class="modal" id="modal-change-pin" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-pin-title">
+        <div class="modal-overlay" data-close="modal-change-pin"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-pin-title">Смена PIN-кода</h2>
+                <button class="modal-close" data-close="modal-change-pin" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="change-pin-old">Текущий PIN</label>
+                    <input type="password" class="form-input" id="change-pin-old" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="change-pin-new">Новый PIN</label>
+                    <input type="password" class="form-input" id="change-pin-new" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="change-pin-confirm">Повторите новый PIN</label>
+                    <input type="password" class="form-input" id="change-pin-confirm" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" required>
+                </div>
+                <div class="pin-error" id="pin-error-change" role="alert" aria-live="polite"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-change-pin" type="button">Отмена</button>
+                <button class="btn btn-primary" id="btn-save-new-pin" type="button">Сменить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка: Подтверждение удаления -->
+    <div class="modal" id="modal-confirm" style="display:none;" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+        <div class="modal-overlay" data-close="modal-confirm"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirm-title">Подтверждение</h2>
+                <button class="modal-close" data-close="modal-confirm" type="button" aria-label="Закрыть">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Вы уверены? Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-close="modal-confirm" type="button">Отмена</button>
+                <button class="btn btn-danger" id="btn-confirm-yes" type="button">Удалить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для тостов -->
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ==================== СКРИПТЫ ==================== -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
